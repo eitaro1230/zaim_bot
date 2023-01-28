@@ -1,0 +1,96 @@
+import os
+
+from pyzaim import ZaimAPI
+
+# zaimのAPI認証
+api = ZaimAPI(
+    os.getenv("ZAIM_CONSUMER_ID"),  # zaimコンシューマID
+    os.getenv("ZAIM_CONSUMER_SECRET"),  # zaimコンシューマシークレット
+    os.getenv("ZAIM_ACCESS_TOKEN"),  # zaimアクセストークン
+    os.getenv("ZAIM_ACCESS_SECRET"),  # zaimアクセスシークレット
+    os.getenv("ZAIM_VERIFIER"),  # zaim verifier
+)
+
+
+class ZaimInsert:
+    def __init__(self, date, amount, genre, account):
+        self.date = date
+        self.amount = amount
+        self.genre = genre
+        self.account = account
+
+    def zaim_insert_payment(self):
+        zaim_res = api.insert_payment_simple(
+            date=self.date,
+            amount=self.amount,
+            genre=self.genre,
+            from_account=self.account,
+        )
+        # 登録したIDを取得
+        zaim_res_id = zaim_res.json()["money"]["id"]
+        # レスポンスのステータスコートを取得
+        zaim_res_status_code = zaim_res.status_code
+        return zaim_res_id, zaim_res_status_code
+
+    def zaim_insert_income(self):
+        zaim_res = api.insert_income_simple(
+            date=self.date,
+            category=self.genre,
+            amount=self.amount,
+            to_account=self.account,
+        )
+        # 登録したIDを取得
+        zaim_res_id = zaim_res.json()["money"]["id"]
+        # レスポンスのステータスコートを取得
+        zaim_res_status_code = zaim_res.status_code
+        return zaim_res_id, zaim_res_status_code
+
+
+def zaim_insert_payment(date, amount, genre, account):
+    # zaimに支払いデータの登録して、レスポンスを変数に格納
+    zaim_res = api.insert_payment_simple(
+        date,  # 日付
+        amount,  # 金額
+        genre,  # ジャンル名
+        account,  # 口座名
+    )
+    # 登録したIDを取得
+    zaim_res_id = zaim_res.json()["money"]["id"]
+    # レスポンスのステータスコートを取得
+    zaim_res_status_code = zaim_res.status_code
+    return zaim_res_id, zaim_res_status_code
+
+
+def zaim_delete_payment(register_id):
+    zaim_res = api.delete_payment(register_id)
+    # レスポンスのステータスコートを取得
+    zaim_res_status_code = zaim_res.status_code
+    return zaim_res_status_code
+
+
+def zaim_insert_income(date, category, amount, account):
+    # zaimに支払いデータの登録して、レスポンスを変数に格納
+    zaim_res = api.insert_income_simple(
+        date,  # 日付
+        category,  # カテゴリ
+        amount,  # 金額
+        account,  # 口座名
+    )
+    # 登録したIDを取得
+    zaim_res_id = zaim_res.json()["money"]["id"]
+    # レスポンスのステータスコートを取得
+    zaim_res_status_code = zaim_res.status_code
+    return zaim_res_id, zaim_res_status_code
+
+
+# def zaim_delete_income(register_id):
+#     zaim_res = api.delete_income(register_id)
+#     # レスポンスのステータスコートを取得
+#     zaim_res_status_code = zaim_res.status_code
+#     return zaim_res_status_code
+
+
+def zaim_get_data():
+    zaim_data = api.get_data()
+    zaim_id_data = [str(i["id"]) for i in zaim_data]
+    return zaim_id_data
